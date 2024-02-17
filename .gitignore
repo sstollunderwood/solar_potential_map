@@ -1,3 +1,7 @@
 raw_data/
 weights/
 **.DS_Store
+.env
+.envrc
+model_weights/
+notebooks/.ipynb_checkpoints
