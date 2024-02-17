@@ -10,3 +10,6 @@ masked/
 original/
 data_for_ml/
 retrain_weights/
+
+# Secrets
+.frontend/.streamlit/secrets.toml
