@@ -1,1 +1,4 @@
 raw_data/
+weights/
+data/
+**.DS_Store
