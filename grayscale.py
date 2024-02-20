@@ -2,6 +2,7 @@ import numpy as np
 import os
 import cv2
 import matplotlib.pyplot as plt
+from PIL import Image
 
 
 def convert_greyscale(file):
@@ -15,10 +16,11 @@ def convert_greyscale(file):
     my_image = cv2.imread(val_data_path)
 
     #Create the black and white image
-    plt.imshow(np.all(my_image == [255, 0, 255], axis=-1)*1, cmap='gray')
+    my_image = np.all(my_image == [255, 0, 255], axis=-1)
+    image = Image.fromarray(my_image)
 
     #Save File
-    plt.savefig(destination)
+    image.save(destination)
 
 
 for i in range(1,6001):
