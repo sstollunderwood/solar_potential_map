@@ -22,7 +22,8 @@ def pixel_size_calculator(zoom,lat):
     #Return pixel area
     return pixel_length ** 2
 
-def building_insights(latitude, longitude): # returns insights
+def building_insights(latitude, longitude):
+    # Retuns Google Solar JSON file
     url = f"https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude={latitude}&location.longitude={longitude}&requiredQuality=HIGH&key={SOLAR_API_KEY}"
     try:
         response = requests.get(url)
