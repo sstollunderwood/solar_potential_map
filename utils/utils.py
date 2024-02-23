@@ -22,7 +22,7 @@ def pixel_size_calculator(zoom,lat):
     #Return pixel area
     return pixel_length ** 2
 
-def building_insights(latitude, longitude):
+def get_sunlight_hours(latitude, longitude):
     # Returns Max Sunshine Hours Per Year
     url = f"https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude={latitude}&location.longitude={longitude}&requiredQuality=HIGH&key={SOLAR_API_KEY}"
     try:
@@ -32,8 +32,8 @@ def building_insights(latitude, longitude):
         return ''
 
 
-def rooftop_energy_amount(area, maxsunlighthours):
-    return area * maxsunlighthours
+def rooftop_energy_amount(area, sunlighthours):
+    return area * sunlighthours
 
 def co2_calculator(carbon_intensity, monthly_kwh, time_span):
     return (carbon_intensity*monthly_kwh*time_span)/1000
