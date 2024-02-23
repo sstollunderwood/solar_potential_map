@@ -23,10 +23,17 @@ def pixel_size_calculator(zoom,lat):
     return pixel_length ** 2
 
 def building_insights(latitude, longitude):
-    # Retuns Google Solar JSON file
+    # Returns Max Sunshine Hours Per Year
     url = f"https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude={latitude}&location.longitude={longitude}&requiredQuality=HIGH&key={SOLAR_API_KEY}"
     try:
-        response = requests.get(url)
-        return response.json()
+        response = requests.get(url).json()
+        return response['solarPotential']['maxSunshineHoursPerYear']
     except:
         return ''
+
+
+def rooftop_energy_amount(area, maxsunlighthours):
+    return area * maxsunlighthours
+
+def co2_calculator(carbon_intensity, monthly_kwh, time_span):
+    return (carbon_intensity*monthly_kwh*time_span)/1000
