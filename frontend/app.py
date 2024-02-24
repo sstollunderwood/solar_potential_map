@@ -12,25 +12,36 @@ def watermark_remover(url):
     #Return cropped image
     return im.crop((0,0,572,572))
 
-def show_image(url):
+
+def call_backend(lat,lng,zoom_level,size_h,size_v,API_key):
+    #Calls the backend to get the solar potential
+
+    #Get the image
+    # url = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lng}&zoom={zoom_level}&size={size_h}x{size_v}&maptype=satellite&key={API_key}"
+
+    #Return the new image
+    pass
+
+
+
+
+def confirm_image(url):
 
     with st.spinner("Loading..."):
-        # Display a loading spinner while the modal content loads
-        # You can replace this with your actual modal content
         # st.success("Modal loaded successfully!")
 
-        st.write("Please confirm if the area is correct:")
+        st.write("Please confirm that the area is correct:")
         # Display the image hosted on a URL
         # f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lng}&zoom={zoom_level}&size=500x500&maptype=satellite&key={API_key}"
-
         # url = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lng}&zoom={zoom_level}&size=500x500&maptype=satellite&key={API_key}"
-        st.image(watermark_remover(url), caption="Area")
-
+        img = watermark_remover(url)
+        st.image(img, caption="Area to be analyzed")
         # st.image(url, caption="Area")
 
         # Accept and Close buttons
         if st.button("Accept"):
             st.write("You clicked Accept!")
+
 
         st.write(" ")
         if st.button("Close"):
@@ -170,7 +181,7 @@ def main():
     # st.link_button("Open Static Map", url)
 
     if st.button("Calculate Solar Potential"):
-        show_image(url)
+        confirm_image(url)
 
 
 
