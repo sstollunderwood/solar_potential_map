@@ -14,6 +14,4 @@ retrain_weights/
 # Secrets
 frontend/.streamlit/secrets.toml
 frontend/.devcontainer/
-watermark_remover.py
-watermark_remover.pyZone.Identifier
 data_for_ml
