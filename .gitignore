@@ -5,3 +5,8 @@ weights/
 .envrc
 model_weights/
 notebooks/.ipynb_checkpoints
+google_images/
+masked/
+original/
+data_for_ml/
+retrain_weights/
