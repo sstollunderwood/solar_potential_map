@@ -20,11 +20,15 @@ def load_model(bucket_name: str, blob_name: str):
 
 def predict_mask(model, image) -> np.array:
     """Takes in a retrained SAM and a google earth
-    satellite image in .png format of any ???size??? and outputs a black and white image
+    satellite image in .png format of any size and outputs a black and white image
     corresponding to rooftop masks. Output size is xxx by xxx."""
     processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
     image_array = np.asarray(Image.open(image))
-    array_size = image_array.shape
+    # The google images seem to have a 4th alpha dimension, so we need to
+    # cut it off with splicing
+    image_array = image_array[:, :, :-1]
+    array_size = image_array.shape[0]
+    # Higher grid sizes seem to confuse the model and decrease performance
     grid_size = 10
     # Generate grid points which will serve as prompt for SAM
     x = np.linspace(0, array_size-1, grid_size)
