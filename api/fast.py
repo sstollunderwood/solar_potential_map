@@ -1,4 +1,4 @@
-from google_solar_api_call import building_insights
+# from google_solar_api_call import building_insights # comment this out because docker will look for it in the root folder, when it's actually in /api
 # from sam_model import prediction_function
 from dotenv import load_dotenv # Fetch APIkey
 from fastapi import FastAPI
