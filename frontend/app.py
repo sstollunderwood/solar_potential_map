@@ -75,6 +75,13 @@ def main():
     if geocode_result:
         lat = geocode_result[0]['geometry']['location']['lat']
         lng = geocode_result[0]['geometry']['location']['lng']
+        zipcode = geocode_result[0]['address_components'][0]['long_name']
+        address = ""
+        for component in geocode_result[0]['address_components']:
+            address += component['long_name'] + " "
+        address = address.strip()
+
+
     else:
         st.error("Error: Location not found.")
         st.stop()
@@ -90,9 +97,9 @@ def main():
     size_h= 572
     size_v= 594
 
-
     # Set parameters for the map
     st.write(f"Map of {location}:")
+    st.write(f"Address: /n n {address}")
     st.write(f"Latitude: {lat}, Longitude: {lng}")
     st.write(f"Zoom Level: {zoom_level}")
 
