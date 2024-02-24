@@ -18,7 +18,7 @@ data_for_ml
 
 
 # Secrets
-.front/.streamlit/secrets.toml
+.frontend/.streamlit/secrets.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
