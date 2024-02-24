@@ -3,13 +3,25 @@ import torch
 import numpy as np
 from google.cloud import storage
 from PIL import Image
+import gdown
 
-def load_model(bucket_name: str, blob_name: str):
+def load_model_locally(path):
+    """Loads retrained SAM model weights from local file
+    and returns model ready to make a prediction"""
+    # Load the model configuration
+    model_config = SamConfig.from_pretrained("facebook/sam-vit-base")
+    # Create an instance of the model architecture with the loaded configuration
+    model = SamModel(config=model_config)
+    model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+    return model
+
+def load_model_from_cloud(bucket_name: str, blob_name: str):
     """Downloads retrained SAM model weights from google cloud bucket and
     returns model ready to make a prediction"""
     client = storage.Client()
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(blob_name)
+    #data = blob.download_to_file()
     # Load the model configuration
     model_config = SamConfig.from_pretrained("facebook/sam-vit-base")
     # Create an instance of the model architecture with the loaded configuration
@@ -23,7 +35,7 @@ def predict_mask(model, image) -> np.array:
     satellite image in .png format of any size and outputs a black and white image
     corresponding to rooftop masks. Output size is xxx by xxx."""
     processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
-    image_array = np.asarray(Image.open(image))
+    image_array = np.asarray(image)
     # The google images seem to have a 4th alpha dimension, so we need to
     # cut it off with splicing
     image_array = image_array[:, :, :-1]
@@ -64,16 +76,17 @@ def predict_mask(model, image) -> np.array:
     return mask_prediction
 
 
-def get_roof_area(mask: np.array, zoom_level=19):
-    """Accepts a mask created in by the predict_mask function to calculates
-    the ground area of white pixels (rooftops) in the input image.
-    Assuming a ground-zoom level=19, the relative area of each pixel is
-    2.5 square meters"""
-    # zoom_level_GSD dictionary can allow for different levels of zoom.
-    # Each key is the zoom level, and each value is the corresponding
-    # area of each pixel in square meters. We can add more zoom
-    # levels later if we want.
-    zoom_level_GSD = {19: 2.5}
-    white_pixel_count = np.count_nonzero(mask)
-    rooftop_area = white_pixel_count * zoom_level_GSD[zoom_level]
-    return rooftop_area
+# Use Mark's to account for curvature of the earth
+# def get_roof_area(mask: np.array, zoom_level=19):
+#     """Accepts a mask created in by the predict_mask function to calculates
+#     the ground area of white pixels (rooftops) in the input image.
+#     Assuming a ground-zoom level=19, the relative area of each pixel is
+#     2.5 square meters"""
+#     # zoom_level_GSD dictionary can allow for different levels of zoom.
+#     # Each key is the zoom level, and each value is the corresponding
+#     # area of each pixel in square meters. We can add more zoom
+#     # levels later if we want.
+#     zoom_level_GSD = {19: .25**2}
+#     white_pixel_count = np.count_nonzero(mask)
+#     rooftop_area = white_pixel_count * zoom_level_GSD[zoom_level]
+#     return rooftop_area
