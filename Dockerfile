@@ -4,11 +4,19 @@ COPY requirements.txt /requirements.txt
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-# Run this once
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+# RUN apt-get update && apt-get install libgl1
+# RUN apt -y update && apt -y upgrade
+# RUN apt -y install libopencv-dev
+# Run this once. libpencvdev needs the two updates.
 
 # COPY THE REST OF THE FILES ONLY AFTER THE PIP INSTALL ; AND TRY NOT TO CHANGE IT
 
-COPY api /api
+COPY retrain_weights /retrain_weights
+COPY utils /utils
+COPY fast.py /fast.py
+COPY test_api.py /test_api.py
+
 # put this later so it doesn't rerun every time
 
-CMD uvicorn api.fast:app --host 0.0.0.0 --port 8080
+CMD uvicorn fast:app --host 0.0.0.0 --port 8080
