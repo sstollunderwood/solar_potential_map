@@ -8,7 +8,8 @@ RUN pip install -r requirements.txt
 
 # COPY THE REST OF THE FILES ONLY AFTER THE PIP INSTALL ; AND TRY NOT TO CHANGE IT
 
-COPY api /api
+COPY retrain_weights /retrain_weights
+COPY utils /utils
 # put this later so it doesn't rerun every time
 
 CMD uvicorn api.fast:app --host 0.0.0.0 --port 8080
