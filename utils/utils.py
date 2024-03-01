@@ -1,7 +1,8 @@
 import requests
 from PIL import Image
 import numpy as np
-from utils.params import *
+from io import BytesIO
+from utils.params import MAPS_API_KEY
 
 def get_gmaps_image(lat,lon,zoom,size="572x594"):
     #Returns Google Maps image with watermark removed
@@ -9,8 +10,8 @@ def get_gmaps_image(lat,lon,zoom,size="572x594"):
     url = f"https://maps.googleapis.com/maps/api/staticmap?center={lat},{lon}&zoom={zoom}&size={size}&maptype=satellite&key={MAPS_API_KEY}"
 
     #Gets the Google Maps API Image and returns it without the watermark
-    im = Image.open(requests.get(url,stream=True).raw)
-    return im.crop((0,0,572,572))
+    im = Image.open(requests.get(url,stream=True).raw).convert("RGB")
+    return im.crop((0,0,572,572)), url
 
 def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Given a zoom level and lattitude, returns area of a pixel

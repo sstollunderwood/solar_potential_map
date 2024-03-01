@@ -4,12 +4,16 @@ import googlemaps as gm
 import requests
 from PIL import Image
 import gdown
+import cv2
 from utils.params import *
 from utils.utils import get_gmaps_image, solar_panel_energy_output, co2_calculator, rooftop_area_calculator
 
 
 #interact with endpoint
-fast_url = "http://0.0.0.0:8000/predict"
+if API_RUN == 'LOCAL':
+    api_url = 'http://127.0.0.1:8000'
+if API_RUN == 'ONLINE':
+    api_url = "http://0.0.0.0:8000/predict"
 endpoint = '/predict'
 
 
@@ -18,14 +22,14 @@ def send_backend(lat, lng, zoom, fast_url):
     Capture google maps image, put that in list form in a dict
     and send to the fast API back end
     """
-    image = get_gmaps_image(lat, lng, zoom)
+    image, url = get_gmaps_image(lat, lng, zoom)
     image_np = np.array(image)
     data = {'image': image_np.tolist()}
 
-    r = requests.post(fast_url=fast_url,
+    r = requests.post(url=fast_url,
                       json=data)
 
-    return r
+    return r, lat, lng, url
 
 if 'clicked' not in st.session_state:
     st.session_state.clicked = False
@@ -81,7 +85,7 @@ def main():
     size_v= 594
 
     #Establish column layout, details in left small column, map in larger right column
-    col1, col2, col3 = st.columns([3.5, 1, 7])
+    col1, col2, col3= st.columns([3.5, 1, 7])
 
     with col1:
         st.write("How much solar power can the rooftops of an area generate?")
@@ -94,6 +98,7 @@ def main():
         lat = geocode_result[0]['geometry']['location']['lat']
         lng = geocode_result[0]['geometry']['location']['lng']
         zipcode = geocode_result[0]['address_components'][0]['long_name']
+        city_name = geocode_result[0]['address_components'][5]['long_name']
         address = ""
         for component in geocode_result[0]['address_components']:
             address += component['long_name'] + " "
@@ -105,27 +110,35 @@ def main():
 
     with col1:
         #Left most column
+        #st.write(geocode_result)
         co2 = ''
         solar_kw = ''
         sqrm = ''
         if st.button("Calculate!", on_click=click_button):
             #this is where the back end call will go
-            img = get_gmaps_image(lat=lat, lon=lng, zoom=19)
-            img_np = np.asarray(img)
+            original_image, lat, lng, url = get_gmaps_image(lat, lng, zoom_level)
+            new_url = api_url+endpoint
+            request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+            mask_json = request_post.json()
+            mask_array = np.array(mask_json['output_mask'])
+            mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                           beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            st.write(f"lat:{lat}, long:{lng}")
+            st.write(url)
 
             #calculations
-            sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=img_np)).astype(np.int32)
+            sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
             #need to add a city grabber to pass through the energy output function, default is tokyo
-            solar_kw = np.rint(solar_panel_energy_output(area=sqrm)).astype(np.int32)
+            solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
             co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
 
         st.write('')
         st.write('Totals for chosen area')
         #area for calculation totals
         container = st.container(border=True)
-        container.write(f"Square meters: {sqrm}")
-        container.write(f"Solar Kilowatts: {solar_kw}")
-        container.write(f"Equivalent CO2: {co2}")
+        container.write(f"Square meters: {sqrm} m²")
+        container.write(f"Solar Kilowatts: {solar_kw} Kw hours")
+        container.write(f"Equivalent CO2: {co2} KG")
 
     with col2:
         #middle column, just white space to add a more balanced look
@@ -133,7 +146,7 @@ def main():
 
     # Build Html/JS code to visualize the map using Google Maps API:
     map_html = f"""
-        <div id="map" style="width: 90%; height:400px;"></div>
+        <div id="map" style="width: 100%; height:500px;"></div>
         <script>
             var lat = {lat};
             var lng = {lng};
@@ -193,16 +206,14 @@ def main():
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
-            st.text("Original image                          Segmentation mask")
-            #replace second image with mask img
-            st.image([img,img], width=320)
+            # on = st.toggle("Display mask")
             if st.button("Reset", on_click=click_reset):
                 co2 = ''
                 solar_kw = ''
                 sqrm = ''
                 st.components.v1.html(map_html, width=650, height=500)
-
-
+            st.text("Original                                Mask")
+            st.image([original_image, mask  ], width=300)
 
 
 if __name__ == "__main__":

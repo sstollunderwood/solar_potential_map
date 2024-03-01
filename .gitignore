@@ -10,7 +10,7 @@ masked/
 original/
 data_for_ml/
 retrain_weights/
-
+utils/__pycache__/
 # Secrets
 frontend/.streamlit/secrets.toml
 frontend/.devcontainer/
@@ -125,6 +125,7 @@ celerybeat.pid
 
 # Environments
 .env
+.envrc
 .venv
 env/
 venv/
