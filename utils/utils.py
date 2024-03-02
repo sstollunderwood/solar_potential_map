@@ -37,7 +37,9 @@ def solar_panel_energy_output(area, location="tokyo", setback=0.75, efficiency=0
 
     return ((area * setback) * radiation * sunshine_hours) * efficiency
 
-def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, carbon_intensity=0.376):
-    #Returns estimate of how much kg of carbon is offset by a given power amount produced by solar panels
+def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, coal_carbon_intensity=0.376, gas_carbon_intensity=0.345):
+    #Returns dictionary estimate of how much kg of carbon is offset by a given power amount produced by solar panels for gas and coal
+    carbon_dict = {"Coal Offset":solar_panel_output * (coal_carbon_intensity - solar_carbon_intensity),
+                   "Gas Offset": solar_panel_output * (gas_carbon_intensity - solar_carbon_intensity)}
 
-    return solar_panel_output * (carbon_intensity - solar_carbon_intensity)
+    return carbon_dict
