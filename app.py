@@ -121,7 +121,8 @@ def main():
             request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
             mask_json = request_post.json()
             mask_array = np.array(mask_json['output_mask'])
-            mask = cv2.normalize(mask_array)
+            mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                           beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
             #calculations
             sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
@@ -209,8 +210,8 @@ def main():
                 solar_kw = ''
                 sqrm = ''
                 st.components.v1.html(map_html, width=650, height=500)
-            st.write("Original                                Mask")
-            st.image([original_image, mask], width=300)
+            st.text("Original                                Mask")
+            st.image([original_image, mask  ], width=300)
 
 
 if __name__ == "__main__":
