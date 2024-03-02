@@ -11,7 +11,7 @@ def get_gmaps_image(lat,lon,zoom,size="572x594"):
 
     #Gets the Google Maps API Image and returns it without the watermark
     im = Image.open(requests.get(url,stream=True).raw).convert("RGB")
-    return im.crop((0,0,572,572))
+    return im.crop((0,0,572,572)), url
 
 def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Given a zoom level and lattitude, returns area of a pixel
@@ -24,7 +24,7 @@ def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Return pixel area
     return pixel_area * white_pixel_count
 
-def solar_panel_energy_output(area, location="Tokyo", setback=0.75, efficiency=0.20):
+def solar_panel_energy_output(area, location="tokyo", setback=0.75, efficiency=0.20):
     #Returns annual solar panel output energy taking panel efficiency, setback, and average annual solar radiation into account
     #Annual Solar Radiation based on 5 year average values from https://www.data.jma.go.jp/obd/stats/etrn/view/monthly_s3_en.php?block_no=47662&view=11
     location = location.lower().strip()
