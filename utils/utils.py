@@ -24,12 +24,12 @@ def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Return pixel area
     return pixel_area * white_pixel_count
 
-def solar_panel_energy_output(area, location="tokyo", setback=0.75, efficiency=0.20):
+def solar_panel_energy_output(area, location="Tokyo", setback=0.75, efficiency=0.20):
     #Returns annual solar panel output energy taking panel efficiency, setback, and average annual solar radiation into account
     #Annual Solar Radiation based on 5 year average values from https://www.data.jma.go.jp/obd/stats/etrn/view/monthly_s3_en.php?block_no=47662&view=11
     location = location.lower().strip()
-    radiation_dict = {"tokyo":13.64,"osaka":14.72,"nagoya":14.64,"fukuoka":14.1,"sapporo":13.04}
-    sunshine_dict = {"tokyo":2035.28,"osaka":2214.84,"nagoya":2227.46,"fukuoka":2051.74,"sapporo":1907.68}
+    radiation_dict = {"Tokyo":13.64,"Osaka":14.72,"Nagoya":14.64,"Fukuoka":14.1,"Sapporo":13.04}
+    sunshine_dict = {"Tokyo":2035.28,"Osaka":2214.84,"Nagoya":2227.46,"Fukuoka":2051.74,"Sapporo":1907.68}
     sunshine_hours = sunshine_dict[location]
 
     #Convert radiation from MJ/m2 to KWh/m2

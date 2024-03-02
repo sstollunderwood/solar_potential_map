@@ -9,11 +9,12 @@ from utils.utils import get_gmaps_image, solar_panel_energy_output, co2_calculat
 
 
 #interact with endpoint
-cloud_url = "http://0.0.0.0:8000/predict"
-local_url = 'http://127.0.0.1:8000'
+if API_RUN == 'LOCAL':
+    api_url = 'http://127.0.0.1:8000'
+if API_RUN == 'ONLINE':
+    api_url = "http://0.0.0.0:8000/predict"
 endpoint = '/predict'
 
-test_image = 'mapsmaps.jpg'
 
 def send_backend(lat, lng, zoom, fast_url):
     """
@@ -36,7 +37,6 @@ def click_button():
     """Stateful button, allows the page to change to the
     image + mask when button is clicked"""
     st.session_state.clicked = True
-
 
 def click_reset():
     """Resets page, lets calculation button be clicked again"""
@@ -97,6 +97,7 @@ def main():
         lat = geocode_result[0]['geometry']['location']['lat']
         lng = geocode_result[0]['geometry']['location']['lng']
         zipcode = geocode_result[0]['address_components'][0]['long_name']
+        city_name = geocode_result[0]['address_components'][5]['long_name']
         address = ""
         for component in geocode_result[0]['address_components']:
             address += component['long_name'] + " "
@@ -108,29 +109,23 @@ def main():
 
     with col1:
         #Left most column
+        st.write(geocode_result)
         co2 = ''
         solar_kw = ''
         sqrm = ''
         if st.button("Calculate!", on_click=click_button):
             #this is where the back end call will go
-            new_url = local_url+endpoint
+            original_image = get_gmaps_image(lat, lng, zoom_level)
+            new_url = api_url+endpoint
             request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
             mask_json = request_post.json()
-            json_keys = mask_json.keys()
-            st.write(json_keys)
-            item = mask_json['detail']
-            st.write(item)
-            # mask_array = np.asarray(mask_json['output_mask'])
-            # mask_img = Image.fromarray(mask_array)
-            # st.image(mask_img)
-            # img = get_gmaps_image(lat=lat, lon=lng, zoom=19)
-            # img_np = np.asarray(img)
+            mask_array = np.array(mask_json['output_mask'])
 
-            # #calculations
-            # sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=img_np)).astype(np.int32)
-            # #need to add a city grabber to pass through the energy output function, default is tokyo
-            # solar_kw = np.rint(solar_panel_energy_output(area=sqrm)).astype(np.int32)
-            # co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
+            #calculations
+            sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
+            #need to add a city grabber to pass through the energy output function, default is tokyo
+            solar_kw = np.rint(solar_panel_energy_output(area=sqrm, local=city_name)).astype(np.int32)
+            co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
 
         st.write('')
         st.write('Totals for chosen area')
@@ -212,10 +207,8 @@ def main():
                 solar_kw = ''
                 sqrm = ''
                 st.components.v1.html(map_html, width=650, height=500)
-            st.image([img, test_image], width=300)
-
-
-
+            st.write("Original                                Mask")
+            st.image([original_image, mask_array], width=300)
 
 
 if __name__ == "__main__":
