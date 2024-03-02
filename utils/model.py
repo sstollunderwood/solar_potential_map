@@ -2,8 +2,7 @@ from transformers import SamModel, SamConfig, SamProcessor
 import torch
 import numpy as np
 from google.cloud import storage
-from PIL import Image
-import gdown
+import cv2
 
 def load_model_locally(path):
     """Loads retrained SAM model weights from local file
@@ -30,15 +29,16 @@ def load_model_from_cloud(bucket_name: str, blob_name: str):
     return model
 
 
-def predict_mask(model, image) -> np.array:
-    """Takes in a retrained SAM and a google earth
-    satellite image in .png format of any size and outputs a black and white image
-    corresponding to rooftop masks. Output size is xxx by xxx."""
+def predict_mask(model, image:np.array) -> np.array:
+    """Takes in a retrained SAM model and a google earth
+    satellite image in numpy array format of any size and outputs a black and white image
+    corresponding to rooftop masks. Output size is 256 by 256 pixels."""
     processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
     if type(image) != np.array:
         image_array = np.array(image)
     else:
         image_array = image
+
     array_size = image_array.shape[0]
     # Higher grid sizes seem to confuse the model and decrease performance
     grid_size = 10
@@ -73,6 +73,9 @@ def predict_mask(model, image) -> np.array:
     # convert soft mask to hard mask
     mask_prob = mask_prob.cpu().numpy().squeeze()
     mask_prediction = (mask_prob > 0.5).astype(np.uint8)
+    # Resize the mask from 256x256 to 572x572
+    mask_prediction = cv2.resize(mask_prediction, dsize=(572, 572),
+                                 interpolation=cv2.INTER_CUBIC)
     return mask_prediction
 
 
