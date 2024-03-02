@@ -9,9 +9,11 @@ from utils.utils import get_gmaps_image, solar_panel_energy_output, co2_calculat
 
 
 #interact with endpoint
-fast_url = "http://0.0.0.0:8000/predict"
+cloud_url = "http://0.0.0.0:8000/predict"
+local_url = 'http://127.0.0.1:8000'
 endpoint = '/predict'
 
+test_image = 'mapsmaps.jpg'
 
 def send_backend(lat, lng, zoom, fast_url):
     """
@@ -22,7 +24,7 @@ def send_backend(lat, lng, zoom, fast_url):
     image_np = np.array(image)
     data = {'image': image_np.tolist()}
 
-    r = requests.post(fast_url=fast_url,
+    r = requests.post(url=fast_url,
                       json=data)
 
     return r
@@ -34,6 +36,7 @@ def click_button():
     """Stateful button, allows the page to change to the
     image + mask when button is clicked"""
     st.session_state.clicked = True
+
 
 def click_reset():
     """Resets page, lets calculation button be clicked again"""
@@ -81,7 +84,7 @@ def main():
     size_v= 594
 
     #Establish column layout, details in left small column, map in larger right column
-    col1, col2, col3 = st.columns([3.5, 1, 7])
+    col1, col2, col3= st.columns([3.5, 1, 7])
 
     with col1:
         st.write("How much solar power can the rooftops of an area generate?")
@@ -110,22 +113,32 @@ def main():
         sqrm = ''
         if st.button("Calculate!", on_click=click_button):
             #this is where the back end call will go
-            img = get_gmaps_image(lat=lat, lon=lng, zoom=19)
-            img_np = np.asarray(img)
+            new_url = local_url+endpoint
+            request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+            mask_json = request_post.json()
+            json_keys = mask_json.keys()
+            st.write(json_keys)
+            item = mask_json['detail']
+            st.write(item)
+            # mask_array = np.asarray(mask_json['output_mask'])
+            # mask_img = Image.fromarray(mask_array)
+            # st.image(mask_img)
+            # img = get_gmaps_image(lat=lat, lon=lng, zoom=19)
+            # img_np = np.asarray(img)
 
-            #calculations
-            sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=img_np)).astype(np.int32)
-            #need to add a city grabber to pass through the energy output function, default is tokyo
-            solar_kw = np.rint(solar_panel_energy_output(area=sqrm)).astype(np.int32)
-            co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
+            # #calculations
+            # sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=img_np)).astype(np.int32)
+            # #need to add a city grabber to pass through the energy output function, default is tokyo
+            # solar_kw = np.rint(solar_panel_energy_output(area=sqrm)).astype(np.int32)
+            # co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
 
         st.write('')
         st.write('Totals for chosen area')
         #area for calculation totals
         container = st.container(border=True)
-        container.write(f"Square meters: {sqrm}")
-        container.write(f"Solar Kilowatts: {solar_kw}")
-        container.write(f"Equivalent CO2: {co2}")
+        container.write(f"Square meters: {sqrm} m²")
+        container.write(f"Solar Kilowatts: {solar_kw} Kw hours")
+        container.write(f"Equivalent CO2: {co2} KG")
 
     with col2:
         #middle column, just white space to add a more balanced look
@@ -193,14 +206,14 @@ def main():
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
-            st.text("Original image                          Segmentation mask")
-            #replace second image with mask img
-            st.image([img,img], width=320)
+            # on = st.toggle("Display mask")
             if st.button("Reset", on_click=click_reset):
                 co2 = ''
                 solar_kw = ''
                 sqrm = ''
                 st.components.v1.html(map_html, width=650, height=500)
+            st.image([img, test_image], width=300)
+
 
 
 
