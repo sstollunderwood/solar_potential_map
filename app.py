@@ -127,7 +127,7 @@ def main():
             #calculations
             sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
             #need to add a city grabber to pass through the energy output function, default is tokyo
-            solar_kw = np.rint(solar_panel_energy_output(area=sqrm, local=city_name)).astype(np.int32)
+            solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
             co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
 
         st.write('')
