@@ -4,6 +4,7 @@ import googlemaps as gm
 import requests
 from PIL import Image
 import gdown
+import cv2
 from utils.params import *
 from utils.utils import get_gmaps_image, solar_panel_energy_output, co2_calculator, rooftop_area_calculator
 
@@ -120,6 +121,7 @@ def main():
             request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
             mask_json = request_post.json()
             mask_array = np.array(mask_json['output_mask'])
+            mask = cv2.normalize(mask_array)
 
             #calculations
             sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
@@ -141,7 +143,7 @@ def main():
 
     # Build Html/JS code to visualize the map using Google Maps API:
     map_html = f"""
-        <div id="map" style="width: 90%; height:400px;"></div>
+        <div id="map" style="width: 100%; height:500px;"></div>
         <script>
             var lat = {lat};
             var lng = {lng};
@@ -208,7 +210,7 @@ def main():
                 sqrm = ''
                 st.components.v1.html(map_html, width=650, height=500)
             st.write("Original                                Mask")
-            st.image([original_image, mask_array], width=300)
+            st.image([original_image, mask], width=300)
 
 
 if __name__ == "__main__":
