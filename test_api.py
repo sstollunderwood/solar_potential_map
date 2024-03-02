@@ -4,7 +4,7 @@ import numpy as np
 import requests
 
 # load the image
-test_image = Image.open("data_for_ml/google_images/2.png")
+test_image = Image.open("data_for_ml/google_images/4.png")
 
 # convert image to numpy array
 image_np = np.array(test_image)
@@ -29,7 +29,7 @@ if response.status_code == 200:
     # we need to tell it that the np array is grayscale, otherwise it will just be a black image
     result = cv2.normalize(output_image_np, dst=None, alpha=0,
                            beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    cv2.imwrite('output_mask_test_2.png', result)
+    cv2.imwrite('output_mask_test_4.png', result)
     print(f'Shape of output image array: {output_image_np.shape}')
 else:
     print('Error', response.status_code)
