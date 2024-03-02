@@ -22,14 +22,14 @@ def send_backend(lat, lng, zoom, fast_url):
     Capture google maps image, put that in list form in a dict
     and send to the fast API back end
     """
-    image = get_gmaps_image(lat, lng, zoom)
+    image, url = get_gmaps_image(lat, lng, zoom)
     image_np = np.array(image)
     data = {'image': image_np.tolist()}
 
     r = requests.post(url=fast_url,
                       json=data)
 
-    return r
+    return r, lat, lng, url
 
 if 'clicked' not in st.session_state:
     st.session_state.clicked = False
@@ -110,19 +110,20 @@ def main():
 
     with col1:
         #Left most column
-        st.write(geocode_result)
         co2 = ''
         solar_kw = ''
         sqrm = ''
         if st.button("Calculate!", on_click=click_button):
             #this is where the back end call will go
-            original_image = get_gmaps_image(lat, lng, zoom_level)
+            original_image, lat, lng, url = get_gmaps_image(lat, lng, zoom_level)
             new_url = api_url+endpoint
             request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
             mask_json = request_post.json()
             mask_array = np.array(mask_json['output_mask'])
             mask = cv2.normalize(mask_array, dst=None, alpha=0,
                            beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+            st.write(f"lat:{lat}, long:{lng}")
+            st.write(url)
 
             #calculations
             sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
