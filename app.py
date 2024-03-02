@@ -118,11 +118,11 @@ def main():
             mask_json = request_post.json()
             json_keys = mask_json.keys()
             st.write(json_keys)
-            item = mask_json['detail']
-            st.write(item)
-            # mask_array = np.asarray(mask_json['output_mask'])
-            # mask_img = Image.fromarray(mask_array)
-            # st.image(mask_img)
+            mask_array = np.array(mask_json['output_mask'])
+            input_type = mask_array.shape
+            st.write(input_type)
+            #mask_img = Image.fromarray(mask_array)
+            st.image(mask_array)
             # img = get_gmaps_image(lat=lat, lon=lng, zoom=19)
             # img_np = np.asarray(img)
 
