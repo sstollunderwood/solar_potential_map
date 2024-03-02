@@ -110,7 +110,7 @@ def main():
 
     with col1:
         #Left most column
-        st.write(geocode_result)
+        #st.write(geocode_result)
         co2 = ''
         solar_kw = ''
         sqrm = ''
