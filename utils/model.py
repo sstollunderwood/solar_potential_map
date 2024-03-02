@@ -39,6 +39,9 @@ def predict_mask(model, image:np.array) -> np.array:
     else:
         image_array = image
 
+    # Delete this splicing when running directly from google images
+    #image_array = image_array[:,:,:-1]
+
     array_size = image_array.shape[0]
     # Higher grid sizes seem to confuse the model and decrease performance
     grid_size = 10
