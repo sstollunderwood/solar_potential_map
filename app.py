@@ -99,6 +99,9 @@ def main():
         lng = geocode_result[0]['geometry']['location']['lng']
         zipcode = geocode_result[0]['address_components'][0]['long_name']
         city_name = geocode_result[0]['address_components'][5]['long_name']
+        valid_cities = ["tokyo","osaka","nagoya","fukuoka","sapporo"]
+        if city_name not in valid_cities:
+            city_name = 'tokyo'
         address = ""
         for component in geocode_result[0]['address_components']:
             address += component['long_name'] + " "
@@ -116,9 +119,9 @@ def main():
         sqrm = ''
         if st.button("Calculate!", on_click=click_button):
             #this is where the back end call will go
-            original_image, lat, lng, url = get_gmaps_image(lat, lng, zoom_level)
+            original_image, url = get_gmaps_image(lat, lng, zoom_level)
             new_url = api_url+endpoint
-            request_post = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+            request_post, lat, lng, url = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
             mask_json = request_post.json()
             mask_array = np.array(mask_json['output_mask'])
             mask = cv2.normalize(mask_array, dst=None, alpha=0,
