@@ -35,7 +35,10 @@ def predict_mask(model, image) -> np.array:
     satellite image in .png format of any size and outputs a black and white image
     corresponding to rooftop masks. Output size is xxx by xxx."""
     processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
-    image_array = np.asarray(image)
+    if type(image) != np.array:
+        image_array = np.array(image)
+    else:
+        image_array = image
     array_size = image_array.shape[0]
     # Higher grid sizes seem to confuse the model and decrease performance
     grid_size = 10
