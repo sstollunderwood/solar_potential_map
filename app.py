@@ -6,7 +6,7 @@ from PIL import Image
 import gdown
 import cv2
 from utils.params import *
-from utils.utils import get_gmaps_image, solar_panel_energy_output, co2_calculator, rooftop_area_calculator
+from utils.utils import *
 
 
 #interact with endpoint
@@ -126,8 +126,7 @@ def main():
             mask_array = np.array(mask_json['output_mask'])
             mask = cv2.normalize(mask_array, dst=None, alpha=0,
                            beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-            st.write(f"lat:{lat}, long:{lng}")
-            st.write(url)
+            mask = smooth_image(mask, 800)
 
             #calculations
             sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
