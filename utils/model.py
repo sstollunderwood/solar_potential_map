@@ -36,9 +36,6 @@ def predict_mask(model, image) -> np.array:
     corresponding to rooftop masks. Output size is xxx by xxx."""
     processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
     image_array = np.asarray(image)
-    # The google images seem to have a 4th alpha dimension, so we need to
-    # cut it off with splicing
-    image_array = image_array[:, :, :-1]
     array_size = image_array.shape[0]
     # Higher grid sizes seem to confuse the model and decrease performance
     grid_size = 10
