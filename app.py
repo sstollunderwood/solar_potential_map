@@ -79,7 +79,7 @@ def main():
 
     # Set up default location
     default_location = (35.633942, 139.708126)
-    zoom_level = 17.8
+    zoom_level = 18
     radius = 62
     size_h= 572
     size_v= 594
