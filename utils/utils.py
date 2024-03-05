@@ -11,7 +11,7 @@ def get_gmaps_image(lat,lon,zoom,size="572x594"):
 
     #Gets the Google Maps API Image and returns it without the watermark
     im = Image.open(requests.get(url,stream=True).raw).convert("RGB")
-    return im.crop((0,0,572,572)), url
+    return im.crop((0,0,572,572))
 
 def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Given a zoom level and lattitude, returns area of a pixel
@@ -41,3 +41,13 @@ def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, carbon_inte
     #Returns estimate of how much kg of carbon is offset by a given power amount produced by solar panels
 
     return solar_panel_output * (carbon_intensity - solar_carbon_intensity)
+
+def car_equivalent(carbon, car_co2_year = 4200):
+    #Returns equivalent number of cars per years for co2 output
+
+    return carbon / car_co2_year
+
+def home_electricity(solar_kw, home_yearly = 12154):
+    #Returns number of homes that could be supplied for a year
+
+    return solar_kw / home_yearly
