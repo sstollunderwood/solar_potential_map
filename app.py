@@ -123,21 +123,22 @@ def main():
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
                 original_image = get_gmaps_image(lat, lng, zoom_level)
-                new_url = api_url+endpoint
-                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-                mask_json = request_post.json()
-                mask_array = np.array(mask_json['output_mask'])
-                mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                               beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-                mask = smooth_image(mask, 800)
+                mask_array = original_image
+                # new_url = api_url+endpoint
+                # request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                # mask_json = request_post.json()
+                # mask_array = np.array(mask_json['output_mask'])
+                # mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                #                beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                # mask = smooth_image(mask, 800)
 
                 #calculations
                 sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
                 #need to add a city grabber to pass through the energy output function, default is tokyo
                 solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
                 co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
-                car_equiv = np.rint(car_equivalent(co2)).astype(np.int32)
-                homes = np.rint(home_electricity(solar_kw)).astype(np.int32)
+                car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
+                homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
                 placeholder = True
         with sub_col_3:
             if st.session_state.clicked:
@@ -166,22 +167,23 @@ def main():
                     st.write(f"Square meters: {str(sqrm)[:2]},{str(sqrm)[2:]} m²")
                 elif len(str(sqrm)) == 6:
                     st.write(f"Square meters: {str(sqrm)[:3]},{str(sqrm)[3:]} m²")
-                if len(str(solar_kw)) == 10:
-                    st.write(f"Solar Kilowatts: {str(solar_kw)[:1]},{str(solar_kw)[1:4]},{str(solar_kw)[4:7]},{str(solar_kw)[7:]} Kw hours per year")
-                elif len(str(solar_kw)) == 9:
-                    st.write(f"Solar Kilowatts: {str(solar_kw)[:3]},{str(solar_kw)[3:6]},{str(solar_kw)[6:]} Kw hours per year")
-                elif len(str(solar_kw)) == 8:
-                    st.write(f"Solar Kilowatts: {str(solar_kw)[:2]},{str(solar_kw)[2:5]},{str(solar_kw)[5:]} Kw hours per year")
-                st.write(f"This would power {homes} homes for a year!")
-                if len(str(co2)) == 7 and str(co2)[0] == "1":
-                    st.write(f"Equivalent CO2: {str(co2)[:1]} metric ton")
-                elif len(str(co2)) == 7 and str(co2)[0] != "1":
-                    st.write(f"Equivalent CO2: {str(co2)[:2]} metric tons")
-                elif len(str(co2)) == 8:
-                    st.write(f"Equivalent CO2: {str(co2)[:2]} metric tons")
-                elif len(str(co2)) == 9:
-                    st.write(f"Equivalent CO2: {str(co2)[:3]} metric tons")
-                st.write(f"That's {car_equiv} cars driving for one year!")
+                if len(str(solar_kw)) < 10:
+                    st.write(f"Solar Kilowatts: {str(solar_kw)[:-6]} million kWh per year")
+                elif len(str(solar_kw)) >= 10:
+                    st.write(f"Solar Kilowatts: {str(solar_kw)[0]},{str(solar_kw)[1:4]} million kWh per year")
+                if len(homes) == 5:
+                    st.write(f"This would power {homes[:2]},{homes[2:]} homes for a year!")
+                elif len(homes) == 6:
+                    st.write(f"This would power {homes[:3]},{homes[3:]} homes for a year!")
+                if str(co2)[0] == "1":
+                    st.write(f"Equivalent CO2: {str(co2)[:-6]} metric ton")
+                elif str(co2)[0] != "1":
+                    st.write(f"Equivalent CO2: {str(co2)[:-6]} metric tons")
+                if len(homes) == 5:
+                    st.write(f"That's {car_equiv[:2]},{car_equiv[2:]} cars driving for one year!")
+                elif len(homes) == 6:
+                    st.write(f"That's {car_equiv[:3]},{car_equiv[3:]} cars driving for one year!")
+
 
             ## applying style
             # container_css="""
@@ -244,7 +246,7 @@ def main():
                 st.image([original_image], width=350)
             with sub_col_6:
                 st.write("Mask")
-                st.image([mask], width=350)
+                st.image([mask_array], width=350)
 
 
 if __name__ == "__main__":
