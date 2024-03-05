@@ -46,13 +46,14 @@ def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, coal_carbon
 
     return carbon_dict
 
-def car_equivalent(carbon, car_co2_year = 4200):
+def car_equivalent(carbon, car_co2_year = 4600):
     #Returns equivalent number of cars per years for co2 output
-
+    #KG C02 per car amount from https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle
     return carbon / car_co2_year
 
-def home_electricity(solar_kw, home_yearly = 12154):
+def home_electricity(solar_kw, home_yearly = 10791):
     #Returns number of homes that could be supplied for a year
+    # KWH / year amount from https://www.eia.gov/tools/faqs/faq.php?id=97&t=3
 
     return solar_kw / home_yearly
 
