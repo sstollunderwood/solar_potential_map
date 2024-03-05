@@ -8,7 +8,6 @@ import cv2
 from utils.params import *
 from utils.utils import *
 
-
 #interact with endpoint
 if API_RUN == 'LOCAL':
     api_url = 'http://127.0.0.1:8000'
@@ -22,14 +21,14 @@ def send_backend(lat, lng, zoom, fast_url):
     Capture google maps image, put that in list form in a dict
     and send to the fast API back end
     """
-    image, url = get_gmaps_image(lat, lng, zoom)
+    image = get_gmaps_image(lat, lng, zoom)
     image_np = np.array(image)
     data = {'image': image_np.tolist()}
 
     r = requests.post(url=fast_url,
                       json=data)
 
-    return r, lat, lng, url
+    return r
 
 if 'clicked' not in st.session_state:
     st.session_state.clicked = False
@@ -61,10 +60,17 @@ def main():
     """
 
     #markdown for button color
-    m = st.markdown("""
+    button_color = st.markdown("""
         <style>
         div.stButton > button:first-child {
-            background-color: rgb(178, 239, 178);
+            background-color: rgb(32, 176, 0);
+        }
+        </style>""", unsafe_allow_html=True)
+
+    hover_color = st.markdown("""
+        <style>
+        div.stButton > button:hover {
+            background-color: rgb(18, 107, 0);
         }
         </style>""", unsafe_allow_html=True)
 
@@ -77,20 +83,14 @@ def main():
     API_key = MAPS_API_KEY
     gmaps = gm.Client(key=API_key)
 
-    # Set up default location
-    default_location = (35.633942, 139.708126)
-    zoom_level = 18
-    radius = 62
-    size_h= 572
-    size_v= 594
-
     #Establish column layout, details in left small column, map in larger right column
-    col1, col2, col3= st.columns([3.5, 1, 7])
+    col1, col2, col3= st.columns([4, 0.5, 6.5])
 
     with col1:
         st.write("How much solar power can the rooftops of an area generate?")
         st.write('')
         location = st.text_input("Enter location or address:", 'Le Wagon, Meguro, Tokyo')
+        zoom_level = st.slider("Zoom level:", 17, 20, 18)
 
     # Geocode location to get latitude and longitude
     geocode_result = gmaps.geocode(location)
@@ -98,7 +98,10 @@ def main():
         lat = geocode_result[0]['geometry']['location']['lat']
         lng = geocode_result[0]['geometry']['location']['lng']
         zipcode = geocode_result[0]['address_components'][0]['long_name']
-        city_name = geocode_result[0]['address_components'][5]['long_name']
+        neighborhood = geocode_result[0]['address_components'][3]['long_name']
+        city_name = geocode_result[0]['address_components'][4]['long_name']
+        prefecture_name = geocode_result[0]['address_components'][5]['long_name']
+
         valid_cities = ["tokyo","osaka","nagoya","fukuoka","sapporo"]
         if city_name not in valid_cities:
             city_name = 'tokyo'
@@ -112,35 +115,84 @@ def main():
         st.stop()
 
     with col1:
-        #Left most column
-        #st.write(geocode_result)
-        co2 = ''
-        solar_kw = ''
-        sqrm = ''
-        if st.button("Calculate!", on_click=click_button):
-            #this is where the back end call will go
-            original_image, url = get_gmaps_image(lat, lng, zoom_level)
-            new_url = api_url+endpoint
-            request_post, lat, lng, url = send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-            mask_json = request_post.json()
-            mask_array = np.array(mask_json['output_mask'])
-            mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                           beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-            mask = smooth_image(mask, 800)
+        placeholder = False
+        sub_col_1, sub_col_2, sub_col_3, sub_col_4 = st.columns([1,1,1,1])
+        with sub_col_1:
+            st.write("")
+        with sub_col_2:
+            if st.button("Calculate!", on_click=click_button):
+                #this is where the back end call will go
+                original_image = get_gmaps_image(lat, lng, zoom_level)
+                new_url = api_url+endpoint
+                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                mask_json = request_post.json()
+                mask_array = np.array(mask_json['output_mask'])
+                mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                               beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                mask = smooth_image(mask, 800)
 
-            #calculations
-            sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
-            #need to add a city grabber to pass through the energy output function, default is tokyo
-            solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
-            co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
+                #calculations
+                sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
+                #need to add a city grabber to pass through the energy output function, default is tokyo
+                solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
+                co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
+                car_equiv = np.rint(car_equivalent(co2)).astype(np.int32)
+                homes = np.rint(home_electricity(solar_kw)).astype(np.int32)
+                placeholder = True
+        with sub_col_3:
+            if st.session_state.clicked:
+                #help="Click to calculate a different area!"
+                if st.button("Reset", on_click=click_reset):
+                    placeholder = False
+                    st.components.v1.html(map_html, width=650, height=500)
+        with sub_col_4:
+            st.write("")
 
         st.write('')
-        st.write('Totals for chosen area')
+        st.write(f'Totals for {neighborhood}, {city_name}')
         #area for calculation totals
-        container = st.container(border=True)
-        container.write(f"Square meters: {sqrm} m²")
-        container.write(f"Solar Kilowatts: {solar_kw} Kw hours")
-        container.write(f"Equivalent CO2: {co2} KG")
+
+        with st.container(border=True):
+            # html_code = """<div id = 'inner_container'></div>"""
+            # st.markdown(html_code, unsafe_allow_html=True)
+            if not placeholder:
+                #When placeholder is False then this will display
+                st.write(f"Square meters: 0 m²")
+                st.write(f"Solar Kilowatts: 0 Kw hours")
+                st.write(f"Equivalent CO2: 0 metric tons")
+            if placeholder:
+                #When placeholder is True this will display, conditional formatting
+                if len(str(sqrm)) == 5:
+                    st.write(f"Square meters: {str(sqrm)[:2]},{str(sqrm)[2:]} m²")
+                elif len(str(sqrm)) == 6:
+                    st.write(f"Square meters: {str(sqrm)[:3]},{str(sqrm)[3:]} m²")
+                if len(str(solar_kw)) == 10:
+                    st.write(f"Solar Kilowatts: {str(solar_kw)[:1]},{str(solar_kw)[1:4]},{str(solar_kw)[4:7]},{str(solar_kw)[7:]} Kw hours per year")
+                elif len(str(solar_kw)) == 9:
+                    st.write(f"Solar Kilowatts: {str(solar_kw)[:3]},{str(solar_kw)[3:6]},{str(solar_kw)[6:]} Kw hours per year")
+                elif len(str(solar_kw)) == 8:
+                    st.write(f"Solar Kilowatts: {str(solar_kw)[:2]},{str(solar_kw)[2:5]},{str(solar_kw)[5:]} Kw hours per year")
+                st.write(f"This would power {homes} homes for a year!")
+                if len(str(co2)) == 7 and str(co2)[0] == "1":
+                    st.write(f"Equivalent CO2: {str(co2)[:1]} metric ton")
+                elif len(str(co2)) == 7 and str(co2)[0] != "1":
+                    st.write(f"Equivalent CO2: {str(co2)[:2]} metric tons")
+                elif len(str(co2)) == 8:
+                    st.write(f"Equivalent CO2: {str(co2)[:2]} metric tons")
+                elif len(str(co2)) == 9:
+                    st.write(f"Equivalent CO2: {str(co2)[:3]} metric tons")
+                st.write(f"That's {car_equiv} cars driving for one year!")
+
+            ## applying style
+            # container_css="""
+            # <style>
+            #     [data-testid='stVerticalBlock']:has(div#inner_container) {
+            #         background: LightBlue;
+            #     }
+            # </style>
+            # """
+
+            # st.markdown(container_css, unsafe_allow_html=True)
 
     with col2:
         #middle column, just white space to add a more balanced look
@@ -170,28 +222,6 @@ def main():
                         }};
                         map.setOptions({{ mapTypeControl: true, mapTypeControlOptions: mapTypeControlOptions }});
 
-
-                        // Draw square overlay
-                        var center = results[0].geometry.location;
-                        var north = center.lat() + ({radius} / 111000);
-                        var south = center.lat() - ({radius} / 111000);
-                        var east = center.lng() + ({radius} / (111000 * Math.cos(center.lat() * Math.PI / 180)));
-                        var west = center.lng() - ({radius} / (111000 * Math.cos(center.lat() * Math.PI / 180)));
-                        var squareCoords = [
-                            {{ lat: north, lng: west }},
-                            {{ lat: north, lng: east }},
-                            {{ lat: south, lng: east }},
-                            {{ lat: south, lng: west }},
-                            {{ lat: north, lng: west }}
-                        ];
-                        var square = new google.maps.Polygon({{
-                            paths: squareCoords,
-                            strokeColor: '#FF0000',
-                            strokeOpacity: 0.9,
-                            strokeWeight: 2,
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.00
-                        }});
                         square.setMap(map);
                     }} else {{
                         alert('Geocode was not successful for the following reason: ' + status);
@@ -208,14 +238,13 @@ def main():
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
-            # on = st.toggle("Display mask")
-            if st.button("Reset", on_click=click_reset):
-                co2 = ''
-                solar_kw = ''
-                sqrm = ''
-                st.components.v1.html(map_html, width=650, height=500)
-            st.text("Original                                Mask")
-            st.image([original_image, mask  ], width=300)
+            sub_col_5, sub_col_6 = st.columns([4,4])
+            with sub_col_5:
+                st.write("Original")
+                st.image([original_image], width=350)
+            with sub_col_6:
+                st.write("Mask")
+                st.image([mask], width=350)
 
 
 if __name__ == "__main__":
