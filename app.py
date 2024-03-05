@@ -101,6 +101,10 @@ def main():
         neighborhood = geocode_result[0]['address_components'][3]['long_name']
         city_name = geocode_result[0]['address_components'][4]['long_name']
         prefecture_name = geocode_result[0]['address_components'][5]['long_name']
+
+        valid_cities = ["tokyo","osaka","nagoya","fukuoka","sapporo"]
+        if city_name not in valid_cities:
+            city_name = 'tokyo'
         address = ""
         for component in geocode_result[0]['address_components']:
             address += component['long_name'] + " "
@@ -125,12 +129,13 @@ def main():
                 mask_array = np.array(mask_json['output_mask'])
                 mask = cv2.normalize(mask_array, dst=None, alpha=0,
                                beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                mask = smooth_image(mask, 800)
 
                 #calculations
                 sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
                 #need to add a city grabber to pass through the energy output function, default is tokyo
-                solar_kw = np.rint(solar_panel_energy_output(area=sqrm)).astype(np.int32)
-                co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)).astype(np.int32)
+                solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
+                co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
                 car_equiv = np.rint(car_equivalent(co2)).astype(np.int32)
                 homes = np.rint(home_electricity(solar_kw)).astype(np.int32)
                 placeholder = True
