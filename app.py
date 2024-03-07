@@ -49,7 +49,7 @@ def main():
     #LAYOUT / CONFIG
     #set page configuration to wide
     st.set_page_config(layout="wide",initial_sidebar_state="collapsed")
-
+    process_start = False
     #shrink the page margins
     margins_css = """
         <style>
@@ -266,11 +266,11 @@ def main():
 
     # Display the map:
     with col3:
+        while process_start:
+                st.spinner("Processing image...")
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
-            while process_start:
-                st.spinner("Processing image...")
             sub_col_3, sub_col_4 = st.columns([4,4])
             with sub_col_3:
                 st.write("Original")
