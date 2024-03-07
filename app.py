@@ -4,7 +4,7 @@ import googlemaps as gm
 import requests
 from PIL import Image
 #import gdown
-#import cv2
+import cv2
 from utils.params import *
 from utils.utils import *
 
