@@ -3,7 +3,7 @@ import streamlit as st
 import googlemaps as gm
 import requests
 from PIL import Image
-import gdown
+#import gdown
 import cv2
 from utils.params import *
 from utils.utils import *
@@ -11,8 +11,10 @@ from utils.utils import *
 #interact with endpoint
 if API_RUN == 'LOCAL':
     api_url = 'http://127.0.0.1:8000'
-if API_RUN == 'ONLINE':
-    api_url = "http://0.0.0.0:8000/predict"
+    API_KEY = MAPS_API_KEY
+if st.secret.API_RUN == 'ONLINE':
+    api_url = "http://0.0.0.0:8000"
+    API_KEY = st.secrets.MAPS_API_KEY
 endpoint = '/predict'
 
 
@@ -80,7 +82,6 @@ def main():
     st.title("Solar Potential Map")
 
     # Initialize Google Maps API client
-    API_key = MAPS_API_KEY
     gmaps = gm.Client(key=API_key)
 
     #Establish column layout, details in left small column, map in larger right column
@@ -123,14 +124,14 @@ def main():
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
                 original_image = get_gmaps_image(lat, lng, zoom_level)
-                mask_array = original_image
-                # new_url = api_url+endpoint
-                # request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-                # mask_json = request_post.json()
-                # mask_array = np.array(mask_json['output_mask'])
-                # mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                #                beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-                # mask = smooth_image(mask, 800)
+                # mask_array = original_image
+                new_url = api_url+endpoint
+                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                mask_json = request_post.json()
+                mask_array = np.array(mask_json['output_mask'])
+                mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                               beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                mask = smooth_image(mask, 900)
 
                 #calculations
                 sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
@@ -246,7 +247,7 @@ def main():
                 st.image([original_image], width=350)
             with sub_col_6:
                 st.write("Mask")
-                st.image([mask_array], width=350)
+                st.image([mask], width=350)
 
 
 if __name__ == "__main__":
