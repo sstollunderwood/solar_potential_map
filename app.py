@@ -67,7 +67,7 @@ def main():
         div.stButton > button:first-child {
             background-color: rgb(195, 27, 27);
             height: 3em;
-            width: 6em;
+            width: 8em;
         }
         </style>""", unsafe_allow_html=True)
 
@@ -114,7 +114,7 @@ def main():
         )
 
     # Set up the page title
-    st.title("Solar Potential Map")
+    st.title("N:red[o]boru")
 
     # Initialize Google Maps API client
     gmaps = gm.Client(key=API_KEY)
@@ -122,6 +122,9 @@ def main():
     with st.sidebar:
         st.subheader("How much solar power can the rooftops of an area generate?")
         st.divider()
+        st.write("Calculations for energy and co2 equivalents are based off of information provided by the United States EPA")
+        st.write("The average car released 4.20 metrics tons of CO2 a year")
+        st.write("The average home in the US consumed 12,154 kWh of electricity a year")
 
 
     #Establish column layout, details in left small column, map in larger right column
@@ -178,6 +181,7 @@ def main():
                 car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
                 homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
                 placeholder = True
+
         with sub_col_2:
             if st.session_state.clicked:
                 #help="Click to calculate a different area!"
