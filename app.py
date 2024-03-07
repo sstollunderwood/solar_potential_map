@@ -12,8 +12,8 @@ from utils.utils import *
 if API_RUN == 'LOCAL':
     api_url = 'http://127.0.0.1:8000'
     API_KEY = MAPS_API_KEY
-if st.secrets['API_RUN'] == "ONLINE":
-    api_url = "http://0.0.0.0:8000"
+elif st.secrets['API_RUN'] == "ONLINE":
+    api_url = "https://project-image-eumqyi7yoa-an.a.run.app/"
     API_KEY = st.secrets["MAPS_API_KEY"]
 endpoint = '/predict'
 
@@ -88,7 +88,7 @@ def main():
     col1, col2, col3= st.columns([4, 0.5, 6.5])
 
     with col1:
-        st.write("How much solar power can the rooftops of an area generate?")
+        # st.write("How much solar power can the rooftops of an area generate?")
         st.write('')
         location = st.text_input("Enter location or address:", 'Le Wagon, Meguro, Tokyo')
         zoom_level = st.slider("Zoom level:", 17, 20, 18)
@@ -117,10 +117,19 @@ def main():
 
     with col1:
         placeholder = False
-        sub_col_1, sub_col_2, sub_col_3, sub_col_4 = st.columns([1,1,1,1])
+        sub_col_1, sub_col_2 = st.columns([3,3])
         with sub_col_1:
-            st.write("")
-        with sub_col_2:
+            st.markdown(
+            """
+            <style>
+                div[data-testid="column"]:nth-of-type(1)
+                {
+                    text-align: center;
+                }
+
+            </style>
+            """,unsafe_allow_html=True
+            )
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
                 original_image = get_gmaps_image(lat, lng, zoom_level)
@@ -141,17 +150,15 @@ def main():
                 car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
                 homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
                 placeholder = True
-        with sub_col_3:
+        with sub_col_2:
             if st.session_state.clicked:
                 #help="Click to calculate a different area!"
                 if st.button("Reset", on_click=click_reset):
                     placeholder = False
                     st.components.v1.html(map_html, width=650, height=500)
-        with sub_col_4:
-            st.write("")
 
         st.write('')
-        st.write(f'Totals for {neighborhood}, {city_name}')
+        st.write(f'Totals for {neighborhood.capitalize()}, {city_name.capitalize()}')
         #area for calculation totals
 
         with st.container(border=True):
@@ -241,11 +248,11 @@ def main():
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
-            sub_col_5, sub_col_6 = st.columns([4,4])
-            with sub_col_5:
+            sub_col_3, sub_col_4 = st.columns([4,4])
+            with sub_col_3:
                 st.write("Original")
                 st.image([original_image], width=350)
-            with sub_col_6:
+            with sub_col_4:
                 st.write("Mask")
                 st.image([mask], width=350)
 
