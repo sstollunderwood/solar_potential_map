@@ -82,7 +82,7 @@ def main():
     st.title("Solar Potential Map")
 
     # Initialize Google Maps API client
-    gmaps = gm.Client(key=API_key)
+    gmaps = gm.Client(key=API_KEY)
 
     #Establish column layout, details in left small column, map in larger right column
     col1, col2, col3= st.columns([4, 0.5, 6.5])
