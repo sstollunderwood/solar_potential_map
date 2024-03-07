@@ -12,7 +12,7 @@ from utils.utils import *
 if API_RUN == 'LOCAL':
     api_url = 'http://127.0.0.1:8000'
     API_KEY = MAPS_API_KEY
-if st.secret.API_RUN == 'ONLINE':
+if st.secret.API_RUN:
     api_url = "http://0.0.0.0:8000"
     API_KEY = st.secrets.MAPS_API_KEY
 endpoint = '/predict'
