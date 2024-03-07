@@ -19,8 +19,9 @@ def rooftop_area_calculator(zoom,lat, mask:np.array):
     #Based on the assumption earth's radius = 6378137m
 
     #Get pixel length
-    pixel_length = 156543.03392 * np.cos(lat * np.pi / 180) / (2 ** zoom)
-    pixel_area = pixel_length ** 2
+    pixel_area = 156543.03392 * np.cos(lat * np.pi / 180) / (2 ** zoom)
+    #Image gets doubled in size, correction for this resizing
+    pixel_area = pixel_area / 2
     white_pixel_count = np.count_nonzero(mask)
     #Return pixel area
     return pixel_area * white_pixel_count
@@ -38,20 +39,22 @@ def solar_panel_energy_output(area, location="tokyo", setback=0.75, efficiency=0
 
     return ((area * setback) * radiation * sunshine_hours) * efficiency
 
-def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, coal_carbon_intensity=0.376, gas_carbon_intensity=0.345):
+def co2_calculator(solar_panel_output, solar_carbon_intensity=0.041, coal_carbon_intensity=1.043, gas_carbon_intensity=0.440):
     #Returns dictionary estimate of how much kg of carbon is offset by a given power amount produced by solar panels for gas and coal
+    #Carbon intensity taken from https://www.eia.gov/tools/faqs/faq.php?id=74&t=11
     carbon_dict = {"Coal Offset":solar_panel_output * (coal_carbon_intensity - solar_carbon_intensity),
                    "Gas Offset": solar_panel_output * (gas_carbon_intensity - solar_carbon_intensity)}
 
     return carbon_dict
 
-def car_equivalent(carbon, car_co2_year = 4200):
+def car_equivalent(carbon, car_co2_year = 4600):
     #Returns equivalent number of cars per years for co2 output
-
+    #KG C02 per car amount from https://www.epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle
     return carbon / car_co2_year
 
-def home_electricity(solar_kw, home_yearly = 12154):
+def home_electricity(solar_kw, home_yearly = 10791):
     #Returns number of homes that could be supplied for a year
+    # KWH / year amount from https://www.eia.gov/tools/faqs/faq.php?id=97&t=3
 
     return solar_kw / home_yearly
 

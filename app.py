@@ -124,7 +124,7 @@ def main():
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
                 original_image = get_gmaps_image(lat, lng, zoom_level)
-                # mask_array = original_image
+                #mask_array = original_image
                 new_url = api_url+endpoint
                 request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
                 mask_json = request_post.json()
