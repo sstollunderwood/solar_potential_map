@@ -233,7 +233,7 @@ def main():
             }}
 
         </script>
-        <script async defer src="https://maps.googleapis.com/maps/api/js?key={API_key}&callback=initMap"></script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={API_KEY}&callback=initMap"></script>
     """
 
     # Display the map:
