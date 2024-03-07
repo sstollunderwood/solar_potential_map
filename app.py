@@ -144,26 +144,27 @@ def main():
         sub_col_1, sub_col_2 = st.columns([3,3])
         with sub_col_1:
             if st.button("Calculate!", on_click=click_button):
+                process_start = True
                 #this is where the back end call will go
-                with st.spinner("Processing image..."):
-                    original_image = get_gmaps_image(lat, lng, zoom_level)
-                    #mask_array = original_image
-                    new_url = api_url+endpoint
-                    request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-                    mask_json = request_post.json()
-                    mask_array = np.array(mask_json['output_mask'])
-                    mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                                   beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-                    mask = smooth_image(mask, 900)
+                original_image = get_gmaps_image(lat, lng, zoom_level)
+                #mask_array = original_image
+                new_url = api_url+endpoint
+                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                mask_json = request_post.json()
+                mask_array = np.array(mask_json['output_mask'])
+                mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                                beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                mask = smooth_image(mask, 900)
 
-                    #calculations
-                    sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
-                    #need to add a city grabber to pass through the energy output function, default is tokyo
-                    solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
-                    co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
-                    car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
-                    homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
-                    placeholder = True
+                #calculations
+                sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
+                #need to add a city grabber to pass through the energy output function, default is tokyo
+                solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
+                co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
+                car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
+                homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
+                process_start = False
+                placeholder = True
         with sub_col_2:
             if st.session_state.clicked:
                 #help="Click to calculate a different area!"
@@ -268,6 +269,8 @@ def main():
         if not st.session_state.clicked:
             st.components.v1.html(map_html, width=650, height=500)
         else:
+            while process_start:
+                st.spinner("Processing image...")
             sub_col_3, sub_col_4 = st.columns([4,4])
             with sub_col_3:
                 st.write("Original")
