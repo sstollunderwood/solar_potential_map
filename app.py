@@ -210,9 +210,9 @@ def main():
                     #When placeholder is True this will display, conditional formatting
                     sqrm_round = round(sqrm, -3).astype(np.int32)
                     st.write(f"Square meters: {sqrm_round:,} m²")
-                    mega_w = round((solar_kw / 1000), -3).astype(np.int32)
+                    mega_w = round((solar_kw / 1000), -1).astype(np.int32)
                     st.write(f"Energy: {mega_w:,}  megawatts per year")
-                    co2_metric = round((co2 / 1000), -3).astype(np.int32)
+                    co2_metric = round((co2 / 1000), -1).astype(np.int32)
                     st.write(f"CO₂ offset: {co2_metric:,} metric tons")
 
         with sub_col_4:
@@ -233,9 +233,9 @@ def main():
                 else:
                     st.write("")
                     st.write("")
-                    homes_round = np.round(homes, -3)
+                    homes_round = np.round(homes, -1)
                     st.write(f"This would power {homes_round:,} homes for a year!")
-                    car_round = np.round(car_equiv, -3)
+                    car_round = np.round(car_equiv, -1)
                     st.write(f"These are the equivalent emissions produced by {car_round:,} cars a year")
 
     with col2:
