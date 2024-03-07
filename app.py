@@ -230,6 +230,7 @@ def main():
                     st.write("")
                     #st.write("")
                     st.image("st_images/red_home.png", width=40)
+                    st.write("")
                     st.image("st_images/red_car.png", width=40)
         with sub_col_5:
             with st.container():
@@ -245,7 +246,6 @@ def main():
                         st.write(f"This would power {homes[:1]},{homes[1:]} homes for a year!")
                     elif len(homes) == 5:
                         st.write(f"This would power {homes[:2]},{homes[2:]} homes for a year!")
-                    st.write("")
                     if len(car_equiv) <= 3:
                         st.write(f"That's {car_equiv} cars driving for one year!")
                     elif len(car_equiv) == 4:
