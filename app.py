@@ -165,14 +165,14 @@ def main():
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
                 original_image = get_gmaps_image(lat, lng, zoom_level)
-                #mask_array = original_image
-                new_url = api_url+endpoint
-                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-                mask_json = request_post.json()
-                mask_array = np.array(mask_json['output_mask'])
-                mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                                beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-                mask = smooth_image(mask, 900)
+                mask_array = original_image
+                # new_url = api_url+endpoint
+                # request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                # mask_json = request_post.json()
+                # mask_array = np.array(mask_json['output_mask'])
+                # mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                #                 beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                # mask = smooth_image(mask, 900)
 
                 #calculations
                 sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
@@ -208,11 +208,11 @@ def main():
                     st.write(f"CO₂ offset: 0 metric tons")
                 if placeholder:
                     #When placeholder is True this will display, conditional formatting
-                    sqrm_round = np.round(sqrm, -3).astype(np.int32)
+                    sqrm_round = round(sqrm, -3).astype(np.int32)
                     st.write(f"Square meters: {sqrm_round:,} m²")
-                    mega_w = np.round((solar_kw / 1000), -3).astype(np.int32)
+                    mega_w = round((solar_kw / 1000), -3).astype(np.int32)
                     st.write(f"Energy: {mega_w:,}  megawatts per year")
-                    co2_metric = np.round((co2 / 1000), -3).astype(np.int32)
+                    co2_metric = round((co2 / 1000), -3).astype(np.int32)
                     st.write(f"CO₂ offset: {co2_metric:,} metric tons")
 
         with sub_col_4:
@@ -233,9 +233,9 @@ def main():
                 else:
                     st.write("")
                     st.write("")
-                    homes_round = np.round(homes, -3).astype(np.int32)
+                    homes_round = np.round(homes, -3)
                     st.write(f"This would power {homes_round:,} homes for a year!")
-                    car_round = np.round(car_equiv, -3).astype(np.int32)
+                    car_round = np.round(car_equiv, -3)
                     st.write(f"These are the equivalent emissions produced by {car_round:,} cars a year")
 
     with col2:
@@ -301,7 +301,7 @@ def main():
                 st.image([original_image], use_column_width=True)
             with sub_col_7:
                 st.write("Mask")
-                st.image([mask], use_column_width=True)
+                st.image([mask_array], use_column_width=True)
 
 
 if __name__ == "__main__":
