@@ -48,7 +48,7 @@ def main():
 
     #LAYOUT / CONFIG
     #set page configuration to wide
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide",initial_sidebar_state="collapsed")
 
     #shrink the page margins
     margins_css = """
@@ -78,17 +78,30 @@ def main():
 
     st.markdown(margins_css, unsafe_allow_html=True)
 
+    #markdown color for sidebar
+    st.markdown("""
+        <style>
+            [data-testid=stSidebar] {
+                background-color: #ff000050;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
     # Set up the page title
     st.title("Solar Potential Map")
 
     # Initialize Google Maps API client
     gmaps = gm.Client(key=API_KEY)
 
+    with st.sidebar:
+        st.subheader("How much solar power can the rooftops of an area generate?")
+        st.divider()
+
+
     #Establish column layout, details in left small column, map in larger right column
     col1, col2, col3= st.columns([4, 0.5, 6.5])
 
     with col1:
-        # st.write("How much solar power can the rooftops of an area generate?")
         st.write('')
         location = st.text_input("Enter location or address:", 'Le Wagon, Meguro, Tokyo')
         zoom_level = st.slider("Zoom level:", 17, 20, 18)
@@ -116,10 +129,7 @@ def main():
         st.stop()
 
     with col1:
-        placeholder = False
-        sub_col_1, sub_col_2 = st.columns([3,3])
-        with sub_col_1:
-            st.markdown(
+        st.markdown(
             """
             <style>
                 div[data-testid="column"]:nth-of-type(1)
@@ -130,26 +140,30 @@ def main():
             </style>
             """,unsafe_allow_html=True
             )
+        placeholder = False
+        sub_col_1, sub_col_2 = st.columns([3,3])
+        with sub_col_1:
             if st.button("Calculate!", on_click=click_button):
                 #this is where the back end call will go
-                original_image = get_gmaps_image(lat, lng, zoom_level)
-                #mask_array = original_image
-                new_url = api_url+endpoint
-                request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
-                mask_json = request_post.json()
-                mask_array = np.array(mask_json['output_mask'])
-                mask = cv2.normalize(mask_array, dst=None, alpha=0,
-                               beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-                mask = smooth_image(mask, 900)
+                with st.spinner("Processing image..."):
+                    original_image = get_gmaps_image(lat, lng, zoom_level)
+                    #mask_array = original_image
+                    new_url = api_url+endpoint
+                    request_post= send_backend(lat=lat, lng=lng, zoom=zoom_level, fast_url=new_url)
+                    mask_json = request_post.json()
+                    mask_array = np.array(mask_json['output_mask'])
+                    mask = cv2.normalize(mask_array, dst=None, alpha=0,
+                                   beta=255,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                    mask = smooth_image(mask, 900)
 
-                #calculations
-                sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
-                #need to add a city grabber to pass through the energy output function, default is tokyo
-                solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
-                co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
-                car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
-                homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
-                placeholder = True
+                    #calculations
+                    sqrm = np.rint(rooftop_area_calculator(zoom=zoom_level, lat=lat, mask=mask_array)).astype(np.int32)
+                    #need to add a city grabber to pass through the energy output function, default is tokyo
+                    solar_kw = np.rint(solar_panel_energy_output(area=sqrm, location=city_name)).astype(np.int32)
+                    co2 = np.rint(co2_calculator(solar_panel_output = solar_kw)["Coal Offset"]).astype(np.int32)
+                    car_equiv = str(np.rint(car_equivalent(co2)).astype(np.int32))
+                    homes = str(np.rint(home_electricity(solar_kw)).astype(np.int32))
+                    placeholder = True
         with sub_col_2:
             if st.session_state.clicked:
                 #help="Click to calculate a different area!"
@@ -171,7 +185,11 @@ def main():
                 st.write(f"Equivalent CO2: 0 metric tons")
             if placeholder:
                 #When placeholder is True this will display, conditional formatting
-                if len(str(sqrm)) == 5:
+                if len(str(sqrm)) <= 3:
+                    st.write(f"Square meters: {str(sqrm)} m²")
+                elif len(str(sqrm)) == 4:
+                    st.write(f"Square meters: {str(sqrm)[:1]},{str(sqrm)[1:]} m²")
+                elif len(str(sqrm)) == 5:
                     st.write(f"Square meters: {str(sqrm)[:2]},{str(sqrm)[2:]} m²")
                 elif len(str(sqrm)) == 6:
                     st.write(f"Square meters: {str(sqrm)[:3]},{str(sqrm)[3:]} m²")
@@ -179,18 +197,20 @@ def main():
                     st.write(f"Solar Kilowatts: {str(solar_kw)[:-6]} million kWh per year")
                 elif len(str(solar_kw)) >= 10:
                     st.write(f"Solar Kilowatts: {str(solar_kw)[0]},{str(solar_kw)[1:4]} million kWh per year")
-                if len(homes) == 5:
+                if len(homes) <= 3:
+                    st.write(f"This would power {homes} homes for a year!")
+                elif len(homes) == 4:
+                    st.write(f"This would power {homes[:1]},{homes[1:]} homes for a year!")
+                elif len(homes) == 5:
                     st.write(f"This would power {homes[:2]},{homes[2:]} homes for a year!")
-                elif len(homes) == 6:
-                    st.write(f"This would power {homes[:3]},{homes[3:]} homes for a year!")
                 if str(co2)[0] == "1":
                     st.write(f"Equivalent CO2: {str(co2)[:-6]} metric ton")
                 elif str(co2)[0] != "1":
                     st.write(f"Equivalent CO2: {str(co2)[:-6]} metric tons")
-                if len(homes) == 5:
-                    st.write(f"That's {car_equiv[:2]},{car_equiv[2:]} cars driving for one year!")
-                elif len(homes) == 6:
-                    st.write(f"That's {car_equiv[:3]},{car_equiv[3:]} cars driving for one year!")
+                if len(car_equiv) <= 3:
+                    st.write(f"That's {car_equiv} cars driving for one year!")
+                elif len(car_equiv) == 4:
+                    st.write(f"That's {car_equiv[:1]},{car_equiv[1:]} cars driving for one year!")
 
 
             ## applying style
