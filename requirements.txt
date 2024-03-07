@@ -1,4 +1,5 @@
 #opencv-python-headless
+protobuf<3.20,>=3.9.2
 opencv-python
 pycocotools==2.0.7
 matplotlib==3.8.2
