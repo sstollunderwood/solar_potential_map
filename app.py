@@ -209,10 +209,10 @@ def main():
             with st.container():
                 if placeholder:
                     st.write("")
-                    mega_w = round((solar_kw / 1000), -2).astype(np.int32)
+                    mega_w = round((solar_kw / 1000), -1).astype(np.int32)
                     st.write(f"Energy: {mega_w:,}  megawatts per year")
                     st.write("")
-                    co2_metric = round((co2 / 1000), -2).astype(np.int32)
+                    co2_metric = round((co2 / 1000), -1).astype(np.int32)
                     st.write(f"CO₂ offset: {co2_metric:,} metric tons")
 
         with sub_col_4:
