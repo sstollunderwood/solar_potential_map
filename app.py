@@ -123,7 +123,7 @@ def main():
         st.write("Calculations for energy and CO₂ equivalents are based off of information provided by the [United States EPA](https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator).")
         st.write("The average car releases 4.20 metric tons of CO₂ a year.")
         st.write("The average home in the US consumes 12 megawatts of electricity a year.")
-        st.write("The yearly solar hours and intenstiy data was provided by the Japan Meterological Agency")
+        st.write("The yearly solar hours and intenstiy data was provided by the [Japan Meterological Agency](https://www.data.jma.go.jp/obd/stats/data/en/smp/index.html).")
 
     #Establish column layout, details in left small column, map in larger right column
     col1, col2, col3= st.columns([4, 0.5, 5.5])
@@ -196,9 +196,9 @@ def main():
         st.write(f'Totals for {location.title()}')
         if placeholder:
             sqrm_round = round(sqrm, -1).astype(np.int32)
-            st.write(f"Square meters: {sqrm_round:,} m²")
+            st.write(f"Area: {sqrm_round:,} m²")
         if not placeholder:
-            st.write(f"Square meters: 0 m²")
+            st.write(f"Area: 0 m²")
             st.write("")
             st.write(f"Energy: 0 megawatts")
             st.write('')
