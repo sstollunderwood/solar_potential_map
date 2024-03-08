@@ -113,8 +113,6 @@ def main():
         """,unsafe_allow_html=True
         )
 
-    # Set up the page title
-    st.title("N:red[o]boru")
 
     # Initialize Google Maps API client
     gmaps = gm.Client(key=API_KEY)
@@ -130,9 +128,12 @@ def main():
     col1, col2, col3= st.columns([4, 0.5, 5.5])
 
     with col1:
+        title_col_1, title_col_2, title_col_3 =  st.columns([0.5, 3, 0.5])
+        with title_col_2:
+            st.image('st_images/Noboru_cropped.png', use_column_width=True)
         st.write('')
         location = st.text_input("Enter location or address:", 'Le Wagon, Meguro, Tokyo')
-        zoom_level = st.slider("Zoom level:", 17, 20, 19)
+        zoom_level = st.slider("Zoom level:", 17, 21, 19)
 
     # Geocode location to get latitude and longitude
     geocode_result = gmaps.geocode(location)
@@ -192,27 +193,25 @@ def main():
 
         st.write('')
         st.write(f'Totals for {location.title()}')
+        if placeholder:
+            sqrm_round = round(sqrm, -1).astype(np.int32)
+            st.write(f"Square meters: {sqrm_round:,} m²")
+        if not placeholder:
+            st.write(f"Square meters: 0 m²")
+            st.write("")
+            st.write(f"Energy: 0 megawatts")
+            st.write('')
+            st.write(f"CO₂ offset: 0 metric tons")
         #area for calculation totals
 
         sub_col_3, sub_col_4, sub_col_5 = st.columns([3,1,3])
         with sub_col_3:
             with st.container():
-                # html_code = """<div id = 'inner_container'></div>"""
-                # st.markdown(html_code, unsafe_allow_html=True)
-                if not placeholder:
-                    #When placeholder is False then this will display
-                    st.write(f"Square meters: 0 m²")
-                    st.write("")
-                    st.write(f"Energy: 0 megawatts")
-                    st.write('')
-                    st.write(f"CO₂ offset: 0 metric tons")
                 if placeholder:
-                    #When placeholder is True this will display, conditional formatting
-                    sqrm_round = round(sqrm, -3).astype(np.int32)
-                    st.write(f"Square meters: {sqrm_round:,} m²")
-                    mega_w = round((solar_kw / 1000), -1).astype(np.int32)
+                    st.write("")
+                    mega_w = round((solar_kw / 1000), -2).astype(np.int32)
                     st.write(f"Energy: {mega_w:,}  megawatts per year")
-                    co2_metric = round((co2 / 1000), -1).astype(np.int32)
+                    co2_metric = round((co2 / 1000), -2).astype(np.int32)
                     st.write(f"CO₂ offset: {co2_metric:,} metric tons")
 
         with sub_col_4:
@@ -221,17 +220,13 @@ def main():
                     st.write("")
                 else:
                     st.write("")
-                    st.write("")
-                    #st.write("")
-                    st.image("st_images/red_home.png", width=40)
-                    st.write("")
-                    st.image("st_images/red_car.png", width=40)
+                    st.image("st_images/house_red.png", width=50)
+                    st.image("st_images/car_red.png", width=50)
         with sub_col_5:
             with st.container():
                 if not st.session_state.clicked:
                     st.write("")
                 else:
-                    st.write("")
                     st.write("")
                     homes_round = np.round(homes, -1)
                     st.write(f"This would power {homes_round:,} homes for a year!")
@@ -293,13 +288,21 @@ def main():
             """, unsafe_allow_html=True
         )
         if not st.session_state.clicked:
+            st.write("")
+            st.write("")
             st.components.v1.html(map_html, width=650, height=500)
         else:
             sub_col_6, sub_col_7 = st.columns([4,4])
             with sub_col_6:
+                st.write("")
+                st.write("")
+                st.write("")
                 st.write("Original")
                 st.image([original_image], use_column_width=True)
             with sub_col_7:
+                st.write("")
+                st.write("")
+                st.write("")
                 st.write("Mask")
                 st.image([mask], use_column_width=True)
 
