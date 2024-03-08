@@ -120,9 +120,10 @@ def main():
     with st.sidebar:
         st.subheader("How much solar power can the rooftops of an area generate?")
         st.divider()
-        st.write("Calculations for energy and CO₂ equivalents are based off of information provided by the United States EPA.")
+        st.write("Calculations for energy and CO₂ equivalents are based off of information provided by the [United States EPA](https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator).")
         st.write("The average car releases 4.20 metric tons of CO₂ a year.")
         st.write("The average home in the US consumes 12 megawatts of electricity a year.")
+        st.write("The yearly solar hours and intenstiy data was provided by the Japan Meterological Agency")
 
     #Establish column layout, details in left small column, map in larger right column
     col1, col2, col3= st.columns([4, 0.5, 5.5])
